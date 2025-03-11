@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meteoritos en Zigzag - Corazón Celestial con Nombre Escrito</title>
+  <style>
+    body {
+      margin: 0;
+      background: radial-gradient(circle at center, #1a0033, #000033, #000);
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    #container {
+      position: relative;
+      width: 80vw;
+      height: 80vh;
+    }
+
+    .particle {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: radial-gradient(circle, #ff66ff, #ff0066);
+      border-radius: 50%;
+      box-shadow: 0 0 35px rgba(255, 100, 255, 0.7);
+      will-change: transform;
+    }
+
+    .trail {
+      position: absolute;
+      left: -60px;
+      top: 50%;
+      width: 65px;
+      height: 4px;
+      background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 0, 150, 0.8));
+      filter: blur(4px);
+      transform-origin: right center;
+      opacity: 0.7;
+      will-change: transform;
+    }
+
+    /* Estilo para el texto inferior */
+    #message {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255, 150, 255, 0.9);
+      font-family: Arial, sans-serif;
+      font-size: 20px;
+      font-weight: bold;
+      pointer-events: none;
+      z-index: 1;
+      text-shadow: 0 0 10px rgba(255, 100, 255, 0.5);
+      white-space: pre-wrap;
+      text-align: center;
+    }
+
+    #message span {
+      display: inline-block;
+      animation: floatIn 0.8s ease-in-out forwards;
+    }
+
+    /* Estilo para el nombre "DEYMAR" en la parte superior */
+    #name {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255, 150, 255, 0.9);
+      font-family: Arial, sans-serif;
+      font-size: 40px;
+      font-weight: bold;
+      pointer-events: none;
+      z-index: 2;
+      text-shadow: 0 0 10px rgba(255, 100, 255, 0.5);
+    }
+
+    #name span {
+      opacity: 0; /* Inicialmente invisible */
+      transition: opacity 0.2s ease-in; /* Transición suave al aparecer */
+    }
+
+    /* Animación para el texto inferior */
+    @keyframes floatIn {
+      0% {
+        transform: translateY(30px) rotate(15deg) scale(0.5);
+        opacity: 0;
+      }
+      50% {
+        transform: translateY(-10px) rotate(-5deg) scale(1.1);
+        opacity: 0.7;
+      }
+      100% {
+        transform: translateY(0) rotate(0deg) scale(1);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <div id="name"></div>
+    <div id="message"></div>
+  </div>
+  <script>
+    function heartCoordinates(t, scale) {
+      const sinT = Math.sin(t);
+      const cosT = Math.cos(t);
+      const x = scale * 16 * sinT * sinT * sinT;
+      const y = -scale * (13 * cosT - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+      return { x, y };
+    }
+
+    const container = document.getElementById('container');
+    const numParticles = 40;
+    const particles = [];
+    const particleData = [];
+
+    const containerWidth = container.clientWidth;
+    const containerHeight = container.clientHeight;
+    const centerX = containerWidth / 2;
+    const centerY = containerHeight / 2;
+    const scale = Math.min(containerWidth, containerHeight) / 30;
+    const verticalOffset = 8 * scale;
+
+    const PI2 = 2 * Math.PI;
+
+    // Crear partículas del corazón
+    for (let i = 0; i < numParticles; i++) {
+      const particle = document.createElement('div');
+      particle.classList.add('particle');
+      const trail = document.createElement('div');
+      trail.classList.add('trail');
+      particle.appendChild(trail);
+      container.appendChild(particle);
+
+      const t = (i / numParticles) * PI2;
+      const speed = 0.003 + Math.random() * 0.002;
+      const { x, y } = heartCoordinates(t, scale);
+      const posX = centerX + x - 6;
+      const posY = centerY + y - verticalOffset - 6;
+
+
+      particle.style.transform = `translate(${posX}px, ${posY}px)`;
+
+      const zigzagOffset = (i % 2 === 0 ? 1 : -1) * (6 + Math.random() * 10);
+
+      particles.push(particle);
+      particleData.push({ t, speed, prevX: posX, prevY: posY, zigzagOffset });
+    }
+
+    // Crear partícula especial para escribir "DEYMAR"
+    const writerParticle = document.createElement('div');
+    writerParticle.classList.add('particle');
+    const writerTrail = document.createElement('div');
+    writerTrail.classList.add('trail');
+    writerParticle.appendChild(writerTrail);
+    container.appendChild(writerParticle);
+    writerParticle.style.transform = `translate(${centerX - 6}px, ${centerY - 6}px)`; // Comienza en el centro
+
+    // Añadir el texto inferior
+    const messageText = "   LA VIDA SIGUE,       AUNQUE TE    CAIGAS\n SIEMPRE TE VOLVERAS A LEVANTAR....TU PUEDES";
+    const messageElement = document.getElementById('message');
+    messageText.split('').forEach((char, index) => {
+      const span = document.createElement('span');
+      span.textContent = char;
+      span.style.animationDelay = `${index * 0.09}s`;
+      messageElement.appendChild(span);
+    });
+
+    // Añadir "DEYMAR" en la parte superior
+    const nameText = "DEYMAR";
+    const nameElement = document.getElementById('name');
+    nameText.split('').forEach((char) => {
+      const span = document.createElement('span');
+      span.textContent = char;
+      nameElement.appendChild(span);
+    });
+
+    // Animar la partícula para escribir "DEYMAR"
+    const nameSpans = nameElement.querySelectorAll('span');
+    let currentLetter = 0;
+    const targetY = 20; // Posición Y del texto en la parte superior
+    const letterSpacing = 40; // Espacio entre letras (aproximado al font-size)
+    const startX = centerX - (nameText.length * letterSpacing) / 2 + letterSpacing / 2;
+
+    function animateWriter() {
+      if (currentLetter < nameSpans.length) {
+        const targetX = startX + currentLetter * letterSpacing;
+        let writerX = parseFloat(writerParticle.style.transform.match(/translate\(([^,]+)px/)[1]);
+        let writerY = parseFloat(writerParticle.style.transform.match(/translate\([^,]+px,\s*([^)]+)px/)[1]);
+
+        // Mover hacia el objetivo
+        const dx = targetX - writerX;
+        const dy = targetY - writerY;
+        const speed = 5; // Velocidad de movimiento
+        writerX += dx * 0.05; // Movimiento suave
+        writerY += dy * 0.05;
+
+        writerParticle.style.transform = `translate(${writerX}px, ${writerY}px)`;
+
+        // Si está cerca de la posición de la letra, revelarla
+        if (Math.abs(dx) < 5 && Math.abs(dy) < 5) {
+          nameSpans[currentLetter].style.opacity = 1;
+          currentLetter++;
+        }
+
+        requestAnimationFrame(animateWriter);
+      } else {
+        // Ocultar la partícula al terminar
+        writerParticle.style.opacity = 0;
+      }
+    }
+
+    // Animación de partículas y escritor
+    function animate() {
+      for (let i = 0; i < numParticles; i++) {
+        particleData[i].t += particleData[i].speed;
+        if (particleData[i].t > PI2) particleData[i].t -= PI2;
+
+        const { x, y } = heartCoordinates(particleData[i].t, scale);
+        const zigzagAmount = Math.sin(particleData[i].t * 10) * particleData[i].zigzagOffset;
+        const newX = centerX + x - 6 + zigzagAmount;
+        const newY = centerY + y - verticalOffset - 6;
+
+        const dx = newX - particleData[i].prevX;
+        const dy = newY - particleData[i].prevY;
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+        const flowAmount = Math.sin(particleData[i].t * 5);
+        const scaleX = 0.5 + flowAmount * 0.5;
+        const opacity = 0.4 + flowAmount * 0.5;
+
+        particles[i].style.transform = `translate(${newX}px, ${newY}px)`;
+        const trail = particles[i].querySelector('.trail');
+        trail.style.transform = `translate(0, -50%) rotate(${angle}deg) scaleX(${scaleX})`;
+        trail.style.opacity = opacity;
+
+        particleData[i].prevX = newX;
+        particleData[i].prevY = newY;
+      }
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+    animateWriter();
+  </script>
+</body>
+</html>
